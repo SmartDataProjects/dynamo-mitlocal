@@ -1,0 +1,26 @@
+{
+  "dealer": {
+    "partition_name": "Default",
+    "group_name": "analysis",
+    "plugins": {
+      "requests": {
+        "priority": 1,
+        "module": "requests:CopyRequestsHandler",
+        "config": {
+          "max_size": 200.0,
+          "block_request_max": 0.5,
+          "db_params": {
+            "db": "dynamoregister"
+          }
+        }
+      }
+    },
+    "attrs": {
+    },
+    "target_sites": ["T3_US_MIT"],
+    "target_site_occupancy": 0.93,
+    "max_site_pending_fraction": 0.03,
+    "max_total_cycle_volume": 200
+  },
+  "log_level": "info"
+}
