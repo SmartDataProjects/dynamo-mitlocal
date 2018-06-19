@@ -9,8 +9,11 @@
         "config": {
           "max_size": 200.0,
           "block_request_max": 0.5,
-          "db_params": {
+          "registry": {
             "db": "dynamoregister"
+          },
+          "history": {
+            "db": "dynamohistory"
           }
         }
       }
