@@ -1,13 +1,13 @@
 {
   "detox": {
     "deletion_per_iteration": 0.01,
-    "detox_history": {
-      "history_db": "dynamohistory",
-      "cache_db": "dynamohistory_cache",
-      "snapshots_spool_dir": "$(DYNAMO_SPOOL)/detox_snapshots",
-      "snapshots_archive_dir": "$(DYNAMO_ARCHIVE)/detox_snapshots"
-    },
-    "attrs": {}
+    "attrs": {
+      "FilePopularity": {
+        "namespaces": [
+          ["/cms/store/user/paus", "/store/user/paus"]
+        ]
+      }
+    }
   },
   "log_level": "info"
 }
