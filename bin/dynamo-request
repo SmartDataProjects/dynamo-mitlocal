@@ -2,6 +2,7 @@
 
 import os
 import sys
+import pwd
 import json
 import logging
 from argparse import ArgumentParser
@@ -26,6 +27,7 @@ parser.add_argument('--cancel', '-x', metavar = 'ID', dest = 'cancel', type = in
 parser.add_argument('--poll', '-l', metavar = 'ID', dest = 'poll', nargs = '?', type = int, const = 0, help = 'Check the status of a copy request.')
 parser.add_argument('--status', '-t', metavar = 'STATUS', dest = 'statuses', nargs = '+', help = 'Polling option. Limit to statuses new, activated, completed, rejected, or cancelled')
 parser.add_argument('--user', '-u', metavar = 'USER', dest = 'users', nargs = '+', help = 'Polling option. Limit to requests made by specified users.')
+parser.add_argument('--delete', '-D', action = 'store_true', dest = 'delete', help = 'Request deletions.')
 parser.add_argument('--raw', '-A', action = 'store_true', dest = 'raw', help = 'Print the raw JSON response from the Dynamo REST API.')
 parser.add_argument('--host', '-o', metavar = 'HOST', dest = 'host', default = DYNAMO_HOST, help = 'Host name of the dynamo server (ex. example.com).')
 parser.add_argument('--cert', '-c', metavar = 'CERT', dest = 'cert', default = PROXY, help = 'User certificate location.')
@@ -48,6 +50,9 @@ need_auth = True
 
 try:
     if args.delete:
+        if 'T2_US_MIT' in args.site and os.getuid() != pwd.getpwnam('cmsprod').pw_uid:
+            raise RuntimeError('Deletion from T2_US_MIT is only allowed for administrators.')
+
         if args.poll is not None:
             resource = 'polldelete'
             data = request.polldelete(args.poll, items, args.sites, args.statuses, args.users)
