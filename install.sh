@@ -32,7 +32,7 @@ rm -rf $SOURCE/.tmp
 mkdir $SOURCE/.tmp
 CLEANUP_LIST=
 
-for OBJ in mysql
+for OBJ in mysql config
 do
   # List of files we are adding to $DYNAMO
   CLEANUP_LIST=$CLEANUP_LIST" "$(diff -rq $SOURCE/$OBJ $DYNAMO/$OBJ | sed -n "s|^Only in $SOURCE/\(.*\): \(.*\)|\1/\2|p")
@@ -66,7 +66,6 @@ source $DYNAMO/utilities/shellutils.sh
 
 READCONF="$DYNAMO/utilities/readconf -I $INSTALL_CONF"
 
-CONFIG_PATH=$($READCONF paths.config_path)
 CLIENT_PATH=$($READCONF paths.client_path)
 
 # Libraries
@@ -85,10 +84,4 @@ for FILE in $(ls $SOURCE/bin)
 do
   cp -f $SOURCE/bin/$FILE $CLIENT_PATH/$FILE
   chmod 755 $CLIENT_PATH/$FILE
-done
-
-# Configurations
-for FILE in $(ls $SOURCE/config)
-do
-  cp -f $SOURCE/config/$FILE $CONFIG_PATH/$FILE
 done
