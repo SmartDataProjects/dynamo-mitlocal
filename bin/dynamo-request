@@ -1,0 +1,149 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import json
+import logging
+from argparse import ArgumentParser
+
+import dynamo.client.request as request
+from dynamo.client.client import DynamoWebClient
+from dynamo.utils.interface.webservice import GET, POST
+from dynamo.dataformat import Configuration
+
+PROXY = '/tmp/x509up_u%d' % os.getuid()
+DYNAMO_HOST = 't3serv009.mit.edu'
+DESTINATION = 'T3_US_MIT'
+
+parser = ArgumentParser(description = 'Request copy or deletion of datasets and blocks.')
+parser.add_argument('--panda', '-p', metavar = 'VERSION', dest = 'version', help = 'Panda version.')
+parser.add_argument('--sample', '-d', metavar = 'SAMPLE', dest = 'samples', nargs = '+', default = [], help = 'Samples to copy.')
+parser.add_argument('--block', '-b', metavar = 'BLOCK', dest = 'blocks', nargs = '+', default = [], help = 'Blocks to copy.')
+parser.add_argument('--site', '-s', metavar = 'SITE', dest = 'sites', nargs = '+', default = [DESTINATION], help = 'Sites to copy to.')
+parser.add_argument('--num-copies', '-n', metavar = 'SITE', dest = 'n', type = int, default = 1, help = 'Sites to copy to.')
+parser.add_argument('--cancel', '-x', metavar = 'ID', dest = 'cancel', type = int, help = 'Cancel a copy request.')
+parser.add_argument('--poll', '-l', metavar = 'ID', dest = 'poll', nargs = '?', type = int, const = 0, help = 'Check the status of a copy request.')
+parser.add_argument('--status', '-t', metavar = 'STATUS', dest = 'statuses', nargs = '+', help = 'Polling option. Limit to statuses new, activated, completed, rejected, or cancelled')
+parser.add_argument('--user', '-u', metavar = 'USER', dest = 'users', nargs = '+', help = 'Polling option. Limit to requests made by specified users.')
+parser.add_argument('--raw', '-A', action = 'store_true', dest = 'raw', help = 'Print the raw JSON response from the Dynamo REST API.')
+parser.add_argument('--host', '-o', metavar = 'HOST', dest = 'host', default = DYNAMO_HOST, help = 'Host name of the dynamo server (ex. example.com).')
+parser.add_argument('--cert', '-c', metavar = 'CERT', dest = 'cert', default = PROXY, help = 'User certificate location.')
+parser.add_argument('--key', '-k', metavar = 'KEY', dest = 'key', default = PROXY, help = 'User certificate key location.')
+
+args = parser.parse_args()
+sys.argv = []
+
+logging.basicConfig(level = logging.INFO)
+
+## Prepare the data to send
+
+if args.panda is not None:
+    datasets = ['pandaf/%s/%s' % (args.panda, d) for d in args.datasets]
+    blocks = ['pandaf/%s/%s' % (args.panda, b) for b in args.blocks]
+    items = datasets + blocks
+else:
+    items = []
+
+resource = ''
+need_auth = True
+
+try:
+    if args.delete:
+        if args.poll is not None:
+            resource = 'polldelete'
+            data = request.polldelete(args.poll, items, args.sites, args.statuses, args.users)
+            need_auth = False
+    
+        else:
+            resource = 'delete'
+            data = request.delete(items, args.sites)
+
+    else:
+        if args.cancel is not None:
+            resource = 'cancelcopy'
+            data = request.cancelcopy(args.cancel)
+
+        elif args.poll is not None:
+            resource = 'pollcopy'
+            data = request.pollcopy(args.poll, items, args.sites, args.statuses, args.users)
+            need_auth = False
+    
+        else:
+            resource = 'copy'
+            data = request.copy(items, args.sites, args.n)
+
+except Exception as ex:
+    sys.stderr.write(str(ex) + '\n')
+    sys.exit(1)
+
+if not resource:
+    sys.stderr.write('Invalid combination of options.')
+    sys.exit(1)
+
+## Instantiate the request client and send th request
+
+if need_auth:
+    auth_config = Configuration(certfile = args.cert, keyfile = args.key)
+else:
+    auth_config = None
+
+# url_base will be replaced to http if need_auth = False
+config = Configuration(url_base = 'https://%s/data/request' % args.host, need_auth = need_auth, auth_handler_conf = auth_config)
+
+client = DynamoWebClient(config)
+
+response = client.make_request(resource, data, method = POST)
+
+if response is None:
+    sys.exit(1)
+
+if args.raw:
+    print json.dumps(response)
+    sys.exit(0)
+
+class bcolors:
+    SUCCESS = '\033[32m'
+    WAIT = '\033[35m'
+    ERROR = '\033[31m'
+    ENDC = '\033[0m'
+
+if args.poll is not None:
+    if len(response) == 0:
+        print 'No request found'
+
+    for request in response:
+        if request['status'] == 'completed':
+            col = bcolors.SUCCESS
+        elif request['status'] == 'failed':
+            col = bcolors.ERROR
+        else:
+            col = bcolors.WAIT
+
+        print '[REQUEST %d] %s%s%s' % (request['request_id'], col, request['status'].upper(), bcolors.ENDC)
+
+        if 'active' in request:
+            for action in request['active']:
+                if action['status'] == 'completed':
+                    col = bcolors.SUCCESS
+                elif action['status'] == 'failed':
+                    col = bcolors.ERROR
+                else:
+                    col = bcolors.WAIT
+
+                print '  %s %s %s%s%s' % (action['site'], action['item'], col, action['status'].upper(), bcolors.ENDC)
+
+        else:
+            for site in request['site']:
+                for item in request['item']:
+                    print '  %s %s' % (site, item)
+            
+elif args.cancel is not None:
+    print '[REQUEST %d] %sCANCELLED%s' % (response['request_id'], bcolors.SUCCESS, bcolors.ENDC)
+
+else:
+    # Response is a single-element list
+    request = response[0]
+    print '[REQUEST %d]' % request['request_id']
+    for site in request['site']:
+        for item in request['item']:
+            print '  %s %s' % (site, item)
