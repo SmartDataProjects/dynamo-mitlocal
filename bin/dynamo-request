@@ -38,8 +38,8 @@ logging.basicConfig(level = logging.INFO)
 
 ## Prepare the data to send
 
-if args.panda is not None:
-    args.datasets += ['pandaf/%s/%s' % (args.panda, d) for d in args.samples]
+if args.version is not None:
+    args.datasets += ['pandaf/%s/%s' % (args.version, d) for d in args.samples]
 
 items = args.datasets + args.blocks
 
