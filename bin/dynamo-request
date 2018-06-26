@@ -17,7 +17,8 @@ DESTINATION = 'T3_US_MIT'
 
 parser = ArgumentParser(description = 'Request copy or deletion of datasets and blocks.')
 parser.add_argument('--panda', '-p', metavar = 'VERSION', dest = 'version', help = 'Panda version.')
-parser.add_argument('--sample', '-d', metavar = 'SAMPLE', dest = 'samples', nargs = '+', default = [], help = 'Samples to copy.')
+parser.add_argument('--sample', '-e', metavar = 'SAMPLE', dest = 'samples', nargs = '+', default = [], help = 'Panda samples to copy. Dataset name = pandaf/VERSION/SAMPLE.')
+parser.add_argument('--dataset', '-d', metavar = 'DATASET', dest = 'datasets', nargs = '+', default = [], help = 'Datasets to copy.')
 parser.add_argument('--block', '-b', metavar = 'BLOCK', dest = 'blocks', nargs = '+', default = [], help = 'Blocks to copy.')
 parser.add_argument('--site', '-s', metavar = 'SITE', dest = 'sites', nargs = '+', default = [DESTINATION], help = 'Sites to copy to.')
 parser.add_argument('--num-copies', '-n', metavar = 'SITE', dest = 'n', type = int, default = 1, help = 'Sites to copy to.')
@@ -38,11 +39,9 @@ logging.basicConfig(level = logging.INFO)
 ## Prepare the data to send
 
 if args.panda is not None:
-    datasets = ['pandaf/%s/%s' % (args.panda, d) for d in args.datasets]
-    blocks = ['pandaf/%s/%s' % (args.panda, b) for b in args.blocks]
-    items = datasets + blocks
-else:
-    items = []
+    args.datasets += ['pandaf/%s/%s' % (args.panda, d) for d in args.samples]
+
+items = args.datasets + args.blocks
 
 resource = ''
 need_auth = True
