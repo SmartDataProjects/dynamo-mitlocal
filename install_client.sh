@@ -41,6 +41,6 @@ CLIENT_PATH=$($READCONF paths.client_path)
 # CLIs
 for FILE in $(ls $SOURCE/bin)
 do
-  cp -f $SOURCE/bin/$FILE $CLIENT_PATH/$FILE
+  sed "s|_PYTHON_|$(which python)|" $SOURCE/bin/$FILE > $CLIENT_PATH/$FILE
   chmod 755 $CLIENT_PATH/$FILE
 done
