@@ -1,0 +1,50 @@
+{
+  "config": {
+    "sites": {
+      "T2_US_MIT": {
+        "host": "se01.cmsaf.mit.edu",
+        "storage_type": "disk",
+        "backend": "",
+        "status": "ready",
+        "fielname_mapping": {
+          "srmv2": [
+            ["(/+store/+.*)", "gsiftp://se01.cmsaf.mit.edu:2811/cms{0}"]
+          ]
+        }
+      },
+      "T3_US_MIT": {
+        "host": "t3serv006.mit.edu",
+        "storage_type": "disk",
+        "backend": "",
+        "status": "ready",
+        "fielname_mapping": {
+          "srmv2": [
+            ["(/+store/+.*)", "srm://t3serv006.mit.edu:8443/srm/v2/server?SFN=/mnt/hadoop/cms{0}"]
+          ]
+        }
+      },
+      "T0_CH_CERN_MSS": {
+        "host": "srm-cms.cern.ch",
+        "storage_type": "mss",
+        "backend": "",
+        "status": "ready",
+        "fielname_mapping": {
+          "srmv2": [
+            ["(/+store/+.*)", "srm://srm-cms.cern.ch:8443/srm/managerv2?SFN=/castor/cern.ch/cms{0}"]
+          ]
+        }
+      },
+      "T1_FR_CCIN2P3_MSS": {
+        "host": "ccsrm.in2p3.fr",
+        "storage_type": "mss",
+        "backend": "",
+        "status": "ready",
+        "fielname_mapping": {
+          "srmv2": [
+            ["(/+store/+.*)", "srm://ccsrm.in2p3.fr:8443/srm/managerv2?SFN=/pnfs/in2p3.fr/data/cms/data{0}"]
+          ]
+        }
+      }
+    }
+  }
+}

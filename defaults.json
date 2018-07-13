@@ -1,0 +1,8 @@
+{
+  "source.siteinfo:SiteInfoSource": {
+    "all": {
+      "module": "staticsiteinfo:StaticSiteInfoSource",
+      "config": {}
+    }
+  }
+}

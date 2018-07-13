@@ -47,6 +47,11 @@ do
   cp -rf $SOURCE/$OBJ $DYNAMO/
 done
 
+CLEANUP_LIST=$CLEANUP_LIST" defaults.json"
+$DYNAMO/utilities/combine-json $DYNAMO/defaults.json $SOURCE/defaults.json > defaults.json.$$
+mv $DYNAMO/defaults.json $SOURCE/.tmp/defaults.json
+mv defaults.json.$$ $DYNAMO/defaults.json
+
 ## INSTALL STANDARD DYNAMO
 
 $DYNAMO/install.sh $INSTALL_CONF
