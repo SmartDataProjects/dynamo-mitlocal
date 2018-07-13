@@ -21,7 +21,7 @@ parser.add_argument('--panda', '-p', metavar = 'VERSION', dest = 'version', help
 parser.add_argument('--sample', '-e', metavar = 'SAMPLE', dest = 'samples', nargs = '+', default = [], help = 'Panda samples to copy. Dataset name = pandaf/VERSION/SAMPLE.')
 parser.add_argument('--dataset', '-d', metavar = 'DATASET', dest = 'datasets', nargs = '+', default = [], help = 'Datasets to copy.')
 parser.add_argument('--block', '-b', metavar = 'BLOCK', dest = 'blocks', nargs = '+', default = [], help = 'Blocks to copy.')
-parser.add_argument('--site', '-s', metavar = 'SITE', dest = 'sites', nargs = '+', default = [DESTINATION], help = 'Sites to copy to.')
+parser.add_argument('--site', '-s', metavar = 'SITE', dest = 'sites', nargs = '+', help = 'Sites to copy to.')
 parser.add_argument('--num-copies', '-n', metavar = 'SITE', dest = 'n', type = int, default = 1, help = 'Sites to copy to.')
 parser.add_argument('--cancel', '-x', metavar = 'ID', dest = 'cancel', type = int, help = 'Cancel a copy request.')
 parser.add_argument('--poll', '-l', metavar = 'ID', dest = 'poll', nargs = '?', type = int, const = 0, help = 'Check the status of a copy request.')
@@ -45,20 +45,23 @@ if args.version is not None:
 
 items = args.datasets + args.blocks
 
+if args.poll is None and args.sites is None:
+    args.sites = [DESTINATION]
+
 resource = ''
 need_auth = True
 
 try:
     if args.delete:
-        if 'T2_US_MIT' in args.site and os.getuid() != pwd.getpwnam('cmsprod').pw_uid:
-            raise RuntimeError('Deletion from T2_US_MIT is only allowed for administrators.')
-
         if args.poll is not None:
             resource = 'polldelete'
             data = request.polldelete(args.poll, items, args.sites, args.statuses, args.users)
             need_auth = False
     
         else:
+            if 'T2_US_MIT' in args.site and os.getuid() != pwd.getpwnam('cmsprod').pw_uid:
+                raise RuntimeError('Deletion from T2_US_MIT is only allowed for administrators.')
+
             resource = 'delete'
             data = request.delete(items, args.sites)
 
