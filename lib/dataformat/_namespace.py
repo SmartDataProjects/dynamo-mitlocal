@@ -57,3 +57,6 @@ def customize_block(Block):
 
 def customize_blockreplica(BlockReplica):
     pass
+
+def customize_file(File):
+    pass
