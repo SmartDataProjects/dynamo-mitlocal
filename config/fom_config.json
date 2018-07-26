@@ -1,0 +1,30 @@
+{
+  "rlfsm": {
+    "db": {
+      "db_params": {
+        "db": "dynamo",
+        "user": "dynamofod"
+      },
+      "history": "dynamohistory"
+    },
+    "transfer": [
+      [
+        null,
+        "fts:FTSFileOperation",
+        {
+          "db_params": {
+            "user": "dynamofod",
+            "db": "dynamo"
+          },
+          "batch_size": 100,
+          "max_pending_transfers": 1000,
+          "max_pending_deletions": 1000,
+          "fts_server": "https://t3serv019.mit.edu:8446",
+          "fts_retry": 3,
+          "metadata_string": "Dynamo User Data"
+        }
+      ]
+    ]
+  },
+  "log_level": "info"
+}
