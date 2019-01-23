@@ -59,7 +59,7 @@ try:
             need_auth = False
     
         else:
-            if 'T2_US_MIT' in args.site and os.getuid() != pwd.getpwnam('cmsprod').pw_uid:
+            if 'T2_US_MIT' in args.sites and os.getuid() != pwd.getpwnam('cmsprod').pw_uid:
                 raise RuntimeError('Deletion from T2_US_MIT is only allowed for administrators.')
 
             resource = 'delete'
